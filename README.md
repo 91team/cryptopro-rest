@@ -26,4 +26,5 @@ docker run --rm -it -p "3001:3000" -v "$(pwd)/keys:/var/opt/cprocsp/keys/root" \
 ## Kubernetes deployment
 
 `kubectl create ns csp`
+`kubectl apply -f secret.yaml -n csp`
 `kubectl apply -f deployment.yaml -n csp`
