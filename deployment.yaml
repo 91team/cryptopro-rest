@@ -1,0 +1,102 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csp-rest-pvc
+  labels:
+    app: csp-rest
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 16Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: csp-rest-deployment
+  labels:
+    app: csp-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: csp-rest
+  template:
+    metadata:
+      labels:
+        app: csp-rest
+    spec:
+      containers:
+        - name: sign
+          image: harbor.91.vpn/cryptopro/rest:latest
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: csp-rest-volume
+              mountPath: /var/opt/cprocsp/keys/root
+          env:
+            - name: KEY_PASSWORD
+              value: "12345678"
+            - name: KEY_THUMBPRINT
+              value: 3ad53bb2cfdc3f7b52dc9b827f7be56cece74537
+            - name: LICENSE_KEY
+              value: 40406-A0000-0219M-Q778D-1Y222
+            - name: API_KEY
+              value: c042ee2fa0f5bd5a3bceeae6f5cd8de066d6d9b9fd7
+      volumes:
+        - name: csp-rest-volume
+          persistentVolumeClaim:
+            claimName: csp-rest-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: csp-rest
+  labels:
+    app: csp-rest
+spec:
+  ports:
+    - protocol: TCP
+      port: 3000
+      name: api
+  clusterIP: None
+  selector:
+    app: csp-rest
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: csp-rest
+  labels:
+    app: csp-rest
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: csp-rest.91.vpn
+      http: &http_rules
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: csp-rest
+                port:
+                  number: 3000
+    - host: csp.fincom.local
+      http: *http_rules
