@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: sign
-          image: harbor.91.vpn/cryptopro/rest:latest
+          image: registry.91.team/cryptopro/rest:latest
           ports:
             - containerPort: 3000
           livenessProbe:

@@ -8,7 +8,7 @@ COPY go.mod ./
 RUN go build -v -o signer
 
 
-FROM harbor.91.vpn/cryptopro/csp:latest
+FROM registry.91.team/cryptopro/csp:latest
 
 WORKDIR /opt/app
 
