@@ -12,6 +12,10 @@ FROM registry.91.team/cryptopro/csp:latest
 
 WORKDIR /opt/app
 
+RUN apt-get update -qq && apt-get install -y \
+  openssl && \
+  rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /opt/app/signer ./
 
 RUN mkdir -p ./tmp
