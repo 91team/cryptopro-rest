@@ -1,0 +1,31 @@
+{{- if .Values.persistence.enabled }}
+{{- $pvc := .Values.persistence.persistentVolumeClaim -}}
+{{- if not $pvc.existingClaim }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cryptopro-rest.fullname" . }}
+  annotations:
+  {{- range $key, $value := $pvc.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if eq .Values.persistence.resourcePolicy "keep" }}
+    helm.sh/resource-policy: keep
+  {{- end }}
+  labels:
+    {{- include "cryptopro-rest.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ $pvc.accessMode }}
+  resources:
+    requests:
+      storage: {{ $pvc.size }}
+  {{- if $pvc.storageClass }}
+    {{- if eq "-" $pvc.storageClass }}
+  storageClassName: ""
+    {{- else }}
+  storageClassName: {{ $pvc.storageClass }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}
