@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/base64"
 	"io"
 	"log"
@@ -14,12 +15,39 @@ import (
 var CertHash = ""
 var SignAlg = ""
 
+var KnownAlg = map[string]bool{
+	"GR3411_2012_512": true,
+	"GR3411_2012_256": true,
+}
+
 func main() {
 	apiKey := getEnv("API_KEY", "")
 	calcCertHash()
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		r.Header.Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status": "ok"}`))
+	})
+
+	// curl -d '123' -X POST localhost:3000/api/hash?alg=GR3411_2012_512
+	http.HandleFunc("/api/hash", func(w http.ResponseWriter, r *http.Request) {
+		if "Bearer "+apiKey != r.Header.Get("Authorization") {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		alg := r.URL.Query().Get("alg")
+		if !KnownAlg[alg] {
+			alg = "GR3411_2012_512"
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Error reading body: %v", err)
+			http.Error(w, "can't read body", http.StatusBadRequest)
+			return
+		}
+
+		r.Header.Set("Content-Type", "text/plain")
+		w.Write(hashData(body, alg))
 	})
 
 	http.HandleFunc("/api/sign", func(w http.ResponseWriter, r *http.Request) {
@@ -156,6 +184,25 @@ func calcCertHash() {
 	}
 	CertHash = string(hashOut)
 	log.Printf("Certificate hash(%s): %s", alg, CertHash)
+}
+
+func hashData(data []byte, alg string) []byte {
+	cmd := exec.Command(
+		"cpverify", "-mk", "-stdin", "-alg", alg)
+
+	buffer := bytes.Buffer{}
+	buffer.Write(data)
+
+	cmd.Stdin = &buffer
+	cmd.Stderr = os.Stderr
+
+	res, err := cmd.Output()
+	if err != nil {
+		log.Println(err.Error())
+		return []byte{}
+	}
+
+	return res
 }
 
 func genFileName() string {
