@@ -8,13 +8,14 @@
 docker run --rm -it -p "3001:3000" -v "$(pwd)/keys:/var/opt/cprocsp/keys/root" \
     -e "KEY_PASSWORD=12345678" \
     -e "KEY_THUMBPRINT=05067bc2dafbc8fdd0e729567bbdfb140096281f" \
+    -e CONTAINER="\\.\HDIMAGE\1027810256355" \
     -e "LICENSE_KEY=40406-A0000-0219M-Q778D-1Y222" \
     -e "API_KEY=c042ee2fa0f5bd5a3bceeae6f5cd8de066d6d9b9fd7" \
     registry.91.team/cryptopro/rest:latest
 ```
 
 - KEY_THUMBPRINT can be obtained from `certmgr -list` command output("SHA1 Hash" row)
-
+- CONTAINER can be obtained from `csptest -keys -enum_cont -fqcn` command
 ## Push to registry
 
 `docker push registry.91.team/cryptopro/rest:latest`
