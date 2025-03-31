@@ -47,7 +47,7 @@ func main() {
 		}
 
 		r.Header.Set("Content-Type", "text/plain")
-		w.Write(hashData(body, alg))
+		w.Write([]byte(hashData(body, alg)))
 	})
 
 	http.HandleFunc("/api/sign", func(w http.ResponseWriter, r *http.Request) {
@@ -186,7 +186,7 @@ func calcCertHash() {
 	log.Printf("Certificate hash(%s): %s", alg, CertHash)
 }
 
-func hashData(data []byte, alg string) []byte {
+func hashData(data []byte, alg string) string {
 	cmd := exec.Command(
 		"cpverify", "-mk", "-stdin", "-alg", alg)
 
@@ -199,10 +199,10 @@ func hashData(data []byte, alg string) []byte {
 	res, err := cmd.Output()
 	if err != nil {
 		log.Println(err.Error())
-		return []byte{}
+		return ""
 	}
 
-	return res
+	return strings.TrimSpace(string(res))
 }
 
 func genFileName() string {
