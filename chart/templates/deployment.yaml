@@ -53,17 +53,13 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.persistence.enabled }}
+          {{- with .Values.volumeMounts }}
           volumeMounts:
-            - name: cryptopro-rest-pv
-              mountPath: /var/opt/cprocsp/keys/root
-              subPath: {{ .Values.persistence.persistentVolumeClaim.subPath }}
+            {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- if .Values.persistence.enabled }}
+      {{- with .Values.volumes }}
       volumes:
-        - name: cryptopro-rest-pv
-          persistentVolumeClaim:
-            claimName: {{ include "cryptopro-rest.fullname" . }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

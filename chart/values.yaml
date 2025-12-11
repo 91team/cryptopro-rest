@@ -89,7 +89,7 @@ autoscaling:
 # is needed in the k8s cluster to provision volumes dynamically.
 # Specify another StorageClass in the "storageClass"
 persistence:
-  enabled: true
+  enabled: false
   # Setting it to "keep" to avoid removing PVCs during a helm delete
   # operation. Leaving it empty will delete PVCs after the chart deleted
   resourcePolicy: "keep"
@@ -102,6 +102,19 @@ persistence:
     accessMode: ReadWriteOnce
     size: 1Gi
     annotations: {}
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
 
 nodeSelector: {}
 
