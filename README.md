@@ -20,6 +20,8 @@ docker run --rm -it -p "3001:3000" -v "$(pwd)/keys:/var/opt/cprocsp/keys/root" \
 
 `docker push registry.91.team/cryptopro/rest:latest`
 
+`helm package ./chart`
+
 ## Usage
 
 `curl -H 'Authorization: Bearer c042ee2fa0f5bd5a3bceeae6f5cd8de066d6d9b9fd7' -d 'data for signing' -X POST http://localhost:3001/api/sign`
